@@ -62,7 +62,7 @@ patchxmlurl = 'http://updates.xensource.com/XenServer/updates.xml'
 # Where we can find auto-exclude files on the internet - filename expected is either:
 ## "XS${majver}${minver}${subver}_exclusions.py"   - ie. "XS621_excludes.py" for XenServer 6.2.1
 ## "XS${majver}${minver}_exclusions.py"            - ie. "XS62_excludes.py" for XenServer 6.2.1 (if the above doesn't exist) OR XenServer 6.2
-autourl = 'https://raw.githubusercontent.com/dalgibbard/citrix_xenserver_patcher/master/exclusions'
+autourl = 'https://raw.githubusercontent.com/fetzerms/citrix_xenserver_patcher/master/exclusions'
 # Where we can store some temporary data
 tmpfile = '/tmp/xml.tmp'
 ##########################
@@ -229,7 +229,7 @@ def listremoveexclude(namelabel):
         L.remove(patch_to_remove)
     except UnboundLocalError:
         pass
-    
+
 
 def which(program):
     ''' Function for establishing if a particular executable is available in the System Path; returns full
@@ -250,11 +250,11 @@ def which(program):
 
     return None
 
-## Function to pull Auto-Excludes file    
+## Function to pull Auto-Excludes file
 def getAutoExcludeList(autourl):
     # Build the full file URL:
     autourlfull = autourl + "/XS" + xsver + "_excludes.py"
-            
+
     ### Start XML Grab + Parse
     try:
         # Get XML
@@ -297,7 +297,7 @@ def getAutoExcludeList(autourl):
 
     # Set "autoexclude" to readable/printable page content.
     autoexclude = autoexclude_data.read()
-    
+
     # Our exclusions list is raw python, so try running it.
     try:
         exec autoexclude
@@ -319,7 +319,7 @@ def getAutoExcludeList(autourl):
             sys.exit(1)
     else:
         return autoexclusions
-            
+
 # Function to test that the xe utility is operational (#21)
 def xetest():
     out = None
@@ -333,12 +333,12 @@ def xetest():
         return True
     else:
         return False
-    
+
 ############################
 ### SCRIPT FUNCTIONS END ###
 ############################
 
-#######################    
+#######################
 ### MAIN CODE START ###
 #######################
 # Validate that we're running XenServer
@@ -429,7 +429,7 @@ elif debug == True:
     print("XE utility located OK")
 if xeuser != "" and xepasswd != "":
     xecliusr = " -u " + xeuser + " -pw " + xepasswd
-    
+
 ###FIXME
 # Now validate that XE is working:
 if not xetest():
@@ -441,7 +441,7 @@ if not xetest():
         sys.exit(WARNING)
 elif debug == True:
     print("XE working OK")
-    
+
 ### Start XML Grab + Parse
 try:
     # Get XML
@@ -496,8 +496,8 @@ finally:
     t.close()
 
 if debug == True:
-    print("XML written to " + tmpfile)    
-    
+    print("XML written to " + tmpfile)
+
 # Parse XML to Vars
 xmldoc = minidom.parse(tmpfile)
 xmlpatches = xmldoc.getElementsByTagName('patch')
@@ -543,7 +543,7 @@ for s in xmlpatches:
             url = str(s.attributes['url'].value)
         except KeyError:
             url = None
-        
+
         # PUSH TO LIST
         listappend(name_label, patch_url, uuid, name_description, after_apply_guidance, timestamp, url)
 
@@ -635,7 +635,7 @@ if debug == True:
     if inst_patch_list == ['']:
         print(" *** C MATCHED *** ")
 ##### END TEST DEBUG
-    
+
 # If there's no patches installed on this machine yet, tell the user (in case they were curious)
 if inst_patch_list == [] or inst_patch_list == "" or inst_patch_list == ['']:
     if nagios == False:
@@ -644,7 +644,7 @@ if inst_patch_list == [] or inst_patch_list == "" or inst_patch_list == ['']:
 else:
     for uuid in inst_patch_list:
         listremovedupe(uuid)
-    
+
 ## Request, where necessary, that patches in the Exclusions file are removed.
 if not exclusions == False:
     for namelabel in exclusions:
@@ -652,11 +652,11 @@ if not exclusions == False:
 
 # Load the AutoExcludes:
 autoexclusions = getAutoExcludeList(autourl)
-## Patches loaded in from the auto-exclude file to be removed from the list next:    
+## Patches loaded in from the auto-exclude file to be removed from the list next:
 if not autoexclusions == False:
     for namelabel in autoexclusions:
         listremoveexclude(namelabel)
-        
+
 ## Lastly, sort the data by timestamp (to get oldest patches installed first).
 sortedlist = sorted(L, key=itemgetter('timestamp'))
 

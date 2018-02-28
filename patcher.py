@@ -80,7 +80,7 @@ patchxmlurl = 'http://updates.xensource.com/XenServer/updates.xml'
 # Where we can find auto-exclude files on the internet - filename expected is either:
 ## "XS${majver}${minver}${subver}_exclusions.py"   - ie. "XS621_excludes.py" for XenServer 6.2.1
 ## "XS${majver}${minver}_exclusions.py"            - ie. "XS62_excludes.py" for XenServer 6.2.1 (if the above doesn't exist) OR XenServer 6.2
-autourl = 'https://raw.githubusercontent.com/dalgibbard/citrix_xenserver_patcher/master/exclusions'
+autourl = 'https://raw.githubusercontent.com/fetzerms/citrix_xenserver_patcher/master/exclusions'
 # Where we can store some temporary data
 tmpfile = '/var/tmp/xml.tmp'
 # Citrix Login credentials
@@ -280,7 +280,7 @@ def listremoveexclude(namelabel):
         L.remove(patch_to_remove)
     except UnboundLocalError:
         pass
-    
+
 
 def which(program):
     ''' Function for establishing if a particular executable is available in the System Path; returns full
@@ -348,7 +348,7 @@ def download_patch(patch_url):
         if os.path.isfile(file_name):
             return file_name
         file_name = url.split('/')[-1].split('&')[0]
-            
+
     print("")
     print("Downloading: " + str(file_name))
     try:
@@ -357,7 +357,7 @@ def download_patch(patch_url):
         print("...ERR: Failed to Download Patch!")
         print("Error: " + str(err))
         sys.exit(3)
-        
+
     try:
         f = open(file_name, 'wb')
     except IOError:
@@ -391,7 +391,7 @@ def download_patch(patch_url):
         sys.exit(20)
 
     print "Download Size: %s Bytes" % (file_size)
-        
+
     file_size_dl = 0
     block_sz = 8192
     while True:
@@ -450,7 +450,7 @@ def apply_patch(name_label, uuid, file_name, host_uuid):
         ## This matches cases where upload has already happened.
         if (do_patch_upload.returncode == 1 and ( (error_block[0] == "The uploaded patch file already exists") or (error_block[0] == "The uploaded update already exists") )):
             print("Patch previously uploaded, attempting to reapply " + str(uuid))
-        else:        
+        else:
             print("New error detected, aborting")
             sys.exit(123)
     else:
@@ -462,7 +462,7 @@ def apply_patch(name_label, uuid, file_name, host_uuid):
         patch_upload_verify_cmd = str(xecli) + str(' ') + list_cmd + (' params=uuid uuid=') + str(uuid) + str(" --minimal")
         do_patch_upload_verify = subprocess.Popen([patch_upload_verify_cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         (out, err) = do_patch_upload_verify.communicate()
-    
+
         if (err):
             print("Failed to validate the uploaded patch: " + str(uncompfile) + "\nError: " + str(err))
             sys.exit(17)
@@ -551,12 +551,12 @@ def apply_patch(name_label, uuid, file_name, host_uuid):
             print("Error encountered cleaning patch data for UUID: " + uuid)
             print("Error was: " + err + "\n")
 
-    
-## Function to pull Auto-Excludes file    
+
+## Function to pull Auto-Excludes file
 def getAutoExcludeList(autourl):
     # Build the full file URL:
     autourlfull = autourl + "/XS" + xsver + "_excludes.py"
-            
+
     ### Start XML Grab + Parse
     try:
         # Get XML
@@ -590,7 +590,7 @@ def getAutoExcludeList(autourl):
 
     # Set "autoexclude" to readable/printable page content.
     autoexclude = autoexclude_data.read()
-    
+
     # Our exclusions list is raw python, so try running it.
     try:
         exec autoexclude
@@ -604,7 +604,7 @@ def getAutoExcludeList(autourl):
         sys.exit(1)
     else:
 	    return autoexclusions
-            
+
 # Function to test that the xe utility is operational (#21)
 def xetest():
     out = None
@@ -618,7 +618,7 @@ def xetest():
         return True
     else:
         return False
-    
+
 # Function for restarting XE Toolstack
 def xetoolstack_restart():
     out = None
@@ -655,12 +655,12 @@ def unmount_cd():
                 print("Continuing...")
             else:
                 print("Please manually unmount (or fix the reported issues), and run the patcher again.")
-                sys.exit(112)            
+                sys.exit(112)
 ############################
 ### SCRIPT FUNCTIONS END ###
 ############################
 
-#######################    
+#######################
 ### MAIN CODE START ###
 #######################
 # Validate that we're running XenServer
@@ -728,7 +728,7 @@ if xecli == None:
     sys.exit(8)
 elif debug == True:
     print("XE utility located OK")
-    
+
 # Now validate that XE is working:
 if not xetest():
     print("XE CLI not responding. Calling 'xe-toolstack-restart':")
@@ -806,8 +806,8 @@ finally:
     t.close()
 
 if debug == True:
-    print("XML written to " + tmpfile)    
-    
+    print("XML written to " + tmpfile)
+
 # Parse XML to Vars
 xmldoc = minidom.parse(tmpfile)
 xmlpatches = xmldoc.getElementsByTagName('patch')
@@ -846,7 +846,7 @@ for s in xmlpatches:
             url = str(s.attributes['url'].value)
         except KeyError:
             url = None
-        
+
         # PUSH TO LIST
         listappend(name_label, patch_url, uuid, name_description, after_apply_guidance, timestamp, url)
 
@@ -964,7 +964,7 @@ if debug == True:
     if inst_patch_list == ['']:
         print(" *** C MATCHED *** ")
 ##### END TEST DEBUG
-    
+
 # If there's no patches installed on this machine yet, tell the user (in case they were curious)
 if inst_patch_list == [] or inst_patch_list == "" or inst_patch_list == ['']:
     print("No Patches are currently installed.")
@@ -972,7 +972,7 @@ if inst_patch_list == [] or inst_patch_list == "" or inst_patch_list == ['']:
 else:
     for uuid in inst_patch_list:
         listremovedupe(uuid)
-    
+
 ## Request, where necessary, that patches in the Exclusions file are removed.
 if not exclusions == False:
     for namelabel in exclusions:
@@ -982,11 +982,11 @@ if autoExclude:
     # Load the AutoExcludes:
     autoexclusions = getAutoExcludeList(autourl)
 
-    ## Patches loaded in from the auto-exclude file to be removed from the list next:    
+    ## Patches loaded in from the auto-exclude file to be removed from the list next:
     if not autoexclusions == False:
         for namelabel in autoexclusions:
             listremoveexclude(namelabel)
-        
+
 ## Lastly, sort the data by timestamp (to get oldest patches installed first).
 sortedlist = sorted(L, key=itemgetter('timestamp'))
 
@@ -1058,10 +1058,10 @@ if not out == "":
             sys.exit(111)
     else:
         unmount_cd()
-    
+
 # Now we're finally ready to actually start the patching!
 print("Starting patching...")
-# check for login 
+# check for login
 if cuser and cpass:
     login()
 # For each patch, run the apply_patch() function.
